@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>  Lista de Presença - FOR. 10.002.02</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Signature_Pad CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/signature_pad@4.1.7/dist/signature_pad.umd.min.js"></script>
+    
+    <!-- html2pdf.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <style>
+        /* Custom print adjustments and canvas fixes */
+        body { font-family: 'Inter', sans-serif; background-color: #f3f4f6; }
+        .canvas-container { position: relative; width: 100%; height: 60px; border: 1px solid #d1d5db; border-radius: 0.375rem; background-color: #fff; touch-action: none; }
+        .canvas-container canvas { width: 100%; height: 100%; border-radius: 0.375rem; display: block; }
+        .canvas-instrutor { height: 100px; }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: #fff; }
+            #document-container { box-shadow: none !important; border: none !important; margin: 0 !important; width: 100% !important; max-width: none !important; }
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center">
+
+    <div class="w-full max-w-[1100px] flex flex-wrap gap-3 mb-6 no-print justify-center bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+        <button onclick="newForm()" class="bg-slate-600 hover:bg-slate-700 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center gap-2">
+            <i class="fa-solid fa-file-circle-plus"></i> Novo Formulário
+        </button>
+        <button onclick="saveToHistory()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center gap-2">
+            <i class="fa-solid fa-floppy-disk"></i> Salvar no Histórico
+        </button>
+        <button onclick="exportPDF()" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center gap-2">
+            <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+        </button>
+        <button onclick="toggleHistory()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-lg font-medium transition flex items-center gap-2 ml-auto">
+            <i class="fa-solid fa-clock-rotate-left"></i> Ver Histórico
+        </button>
+    </div>
+
+    <div id="document-container" class="bg-white w-full max-w-[1100px] p-6 md:p-10 rounded-xl shadow-lg border border-slate-300">
+        
+        <!-- ISO Document Header -->
+        <div class="w-full border-2 border-slate-800 flex flex-col md:flex-row text-center mb-6 text-sm font-bold text-slate-800">
+            <div class="md:w-1/4 border-b-2 md:border-b-0 md:border-r-2 border-slate-800 p-4 flex items-center justify-center bg-slate-50 uppercase">
+               <img src="LOG.jpg" alt="LOG.jpg" width="60" height="40">
+ Lista de Presença
+            </div>
+            <div class="md:w-1/4 border-b-2 md:border-b-0 md:border-r-2 border-slate-800 p-4 flex items-center justify-center">
+                Identificação: FOR. 10.002.02
+            </div>
+            <div class="md:w-1/4 border-b-2 md:border-b-0 md:border-r-2 border-slate-800 p-4 flex flex-col justify-center gap-1">
+                <span>Revisão: 03</span>
+                <span class="text-xs font-normal">Data: 22/05/2025</span>
+            </div>
+            <div class="md:w-1/4 p-4 flex items-center justify-center">
+                Página 5 de 24 <img src="SSSMA.jpg" alt="SSSMA.jpg" width="120" height="50">
+
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-6">
+            
+            <div class="md:col-span-12">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Título</label>
+                <input type="text" id="titulo" class="w-full border border-slate-300 rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ex: Treinamento NR-12">
+            </div>
+
+            <div class="md:col-span-12">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Conteúdo Programático</label>
+                <textarea id="conteudo" rows="2" class="w-full border border-slate-300 rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none resize-none" placeholder="Descreva os tópicos abordados..."></textarea>
+            </div>
+
+            <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Tipo</label>
+                <select id="tipo" class="w-full border border-slate-300 rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none bg-white">
+                    <option value="">Selecione...</option>
+                    <option value="Campanha de Segurança">Campanha de Segurança</option>
+                    <option value="Treinamento">Treinamento</option>
+                    <option value="Reunião">Reunião</option>
+                    <option value="DDS">DDS</option>
+                </select>
+            </div>
+
+            <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Local</label>
+                <input type="text" id="local" class="w-full border border-slate-300 rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+
+            <div class="md:col-span-4">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Duração</label>
+                <input type="text" id="duracao" class="w-full border border-slate-300 rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Ex: 2 horas">
+            </div>
+
+            <div class="md:col-span-5">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Instrutor</label>
+                <input type="text" id="instrutor" class="w-full border border-slate-300 rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+
+            <div class="md:col-span-7">
+                <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Material Distribuído</label>
+                <input type="text" id="material" class="w-full border border-slate-300 rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+            </div>
+
+            <!-- Instructor Signature -->
+            <div class="md:col-span-12 mt-2">
+                <div class="flex justify-between items-end mb-1">
+                    <label class="block text-xs font-bold text-slate-700 uppercase">Assinatura do Instrutor</label>
+                    <button onclick="clearPad('instrutor')" class="text-[10px] bg-rose-100 text-rose-700 px-2 py-1 rounded hover:bg-rose-200 no-print transition">Limpar</button>
+                </div>
+                <div class="canvas-container canvas-instrutor relative">
+                    <canvas id="pad-instrutor"></canvas>
+                    <span class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-slate-300 text-sm pointer-events-none select-none no-print opacity-50">Assine aqui</span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="mt-8">
+            <div class="bg-slate-800 text-white p-2 text-center font-bold tracking-widest uppercase mb-4">
+                PARTICIPANTES
+            </div>
+            
+            <div class="w-full overflow-x-auto">
+                <table class="w-full text-sm border-collapse border border-slate-300">
+                    <thead>
+                        <tr class="bg-slate-100 text-slate-700 uppercase text-xs">
+                            <th class="border border-slate-300 p-2 w-[5%]">Nº</th>
+                            <th class="border border-slate-300 p-2 w-[25%]">Nome</th>
+                            <th class="border border-slate-300 p-2 w-[20%]">Função</th>
+                            <th class="border border-slate-300 p-2 w-[15%]">Empresa</th>
+                            <th class="border border-slate-300 p-2 w-[10%]">Data</th>
+                            <th class="border border-slate-300 p-2 w-[25%]">Assinatura</th>
+                        </tr>
+                    </thead>
+                    <tbody id="participants-body">
+                        <!-- Rendered by JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="history-section" class="w-full max-w-[1100px] mt-6 bg-white p-6 rounded-xl shadow border border-slate-200 hidden no-print">
+        <div class="flex justify-between items-center mb-4 border-b pb-2">
+            <h2 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-list text-indigo-600 mr-2"></i>Histórico de Listas Salvas</h2>
+            <button onclick="toggleHistory()" class="text-slate-500 hover:text-rose-600 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+        </div>
+        <div id="history-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <!-- Populated via JS -->
+            <p class="text-slate-500 text-sm italic col-span-full">Nenhuma lista salva no momento.</p>
+        </div>
+    </div>
+
+    <script>
+        const TOTAL_PARTICIPANTS = 5;
+        let pads = {};
+
+        // Generate Participant Rows
+        function renderParticipants() {
+            const tbody = document.getElementById('participants-body');
+            tbody.innerHTML = '';
+            for (let i = 1; i <= TOTAL_PARTICIPANTS; i++) {
+                tbody.innerHTML += `
+                    <tr>
+                        <td class="border border-slate-300 p-2 text-center font-bold text-slate-500">${i}</td>
+                        <td class="border border-slate-300 p-2"><input type="text" id="p_nome_${i}" class="w-full outline-none bg-transparent"></td>
+                        <td class="border border-slate-300 p-2"><input type="text" id="p_funcao_${i}" class="w-full outline-none bg-transparent"></td>
+                        <td class="border border-slate-300 p-2"><input type="text" id="p_empresa_${i}" class="w-full outline-none bg-transparent"></td>
+                        <td class="border border-slate-300 p-2"><input type="date" id="p_data_${i}" class="w-full outline-none bg-transparent text-xs"></td>
+                        <td class="border border-slate-300 p-2 align-middle relative">
+                            <button onclick="clearPad('p_${i}')" class="absolute top-1 right-1 text-[9px] bg-slate-200 text-slate-600 px-1.5 py-0.5 rounded hover:bg-rose-200 hover:text-rose-700 no-print z-10 transition">Limpar</button>
+                            <div class="canvas-container h-[50px] border-none shadow-inner bg-slate-50 relative mt-3">
+                                <canvas id="pad-p_${i}"></canvas>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Initialize Signature Pads properly preventing offset
+        function initPads() {
+            const canvasList = [
+                { id: 'instrutor', el: document.getElementById('pad-instrutor') }
+            ];
+            for (let i = 1; i <= TOTAL_PARTICIPANTS; i++) {
+                canvasList.push({ id: `p_${i}`, el: document.getElementById(`pad-p_${i}`) });
+            }
+
+            canvasList.forEach(item => {
+                const canvas = item.el;
+                const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+                // Set explicit dimensions based on container to fix coordinate offsets
+                canvas.width = canvas.offsetWidth * ratio;
+                canvas.height = canvas.offsetHeight * ratio;
+                canvas.getContext("2d").scale(ratio, ratio);
+                
+                // Init Pad
+                pads[item.id] = new SignaturePad(canvas, {
+                    penColor: "rgb(0, 0, 128)", // Dark blue ink
+                    backgroundColor: "rgba(0,0,0,0)" // Transparent
+                });
+            });
+        }
+
+        // Handle window resize for canvas (Prevents stretching, though clears pads - acceptable trade-off for fluid UI)
+        window.addEventListener('resize', () => {
+            // Re-adjust canvas internal sizing
+            Object.values(pads).forEach(pad => {
+                 const ratio =  Math.max(window.devicePixelRatio || 1, 1);
+                 const canvas = pad.canvas;
+                 const data = pad.toData(); // Save drawing
+                 canvas.width = canvas.offsetWidth * ratio;
+                 canvas.height = canvas.offsetHeight * ratio;
+                 canvas.getContext("2d").scale(ratio, ratio);
+                 pad.fromData(data); // Restore drawing
+            });
+        });
+
+        function clearPad(id) {
+            if(pads[id]) pads[id].clear();
+        }
+
+        function newForm() {
+            if(confirm("Limpar todo o formulário atual? Dados não salvos serão perdidos.")) {
+                document.querySelectorAll('input, select, textarea').forEach(el => el.value = '');
+                Object.values(pads).forEach(pad => pad.clear());
+            }
+        }
+
+        function saveToHistory() {
+            const record = {
+                id: Date.now(),
+                dataSalvamento: new Date().toLocaleString('pt-BR'),
+                titulo: document.getElementById('titulo').value || 'Sem Título',
+                conteudo: document.getElementById('conteudo').value,
+                tipo: document.getElementById('tipo').value,
+                local: document.getElementById('local').value,
+                duracao: document.getElementById('duracao').value,
+                instrutor: document.getElementById('instrutor').value,
+                material: document.getElementById('material').value,
+                pad_instrutor: pads['instrutor'].isEmpty() ? null : pads['instrutor'].toDataURL(),
+                participantes: []
+            };
+
+            for (let i = 1; i <= TOTAL_PARTICIPANTS; i++) {
+                record.participantes.push({
+                    nome: document.getElementById(`p_nome_${i}`).value,
+                    funcao: document.getElementById(`p_funcao_${i}`).value,
+                    empresa: document.getElementById(`p_empresa_${i}`).value,
+                    data: document.getElementById(`p_data_${i}`).value,
+                    assinatura: pads[`p_${i}`].isEmpty() ? null : pads[`p_${i}`].toDataURL()
+                });
+            }
+
+            let history = JSON.parse(localStorage.getItem('presenca_history') || '[]');
+            history.push(record);
+            localStorage.setItem('presenca_history', JSON.stringify(history));
+            
+            alert('Lista de presença salva no histórico com sucesso!');
+            renderHistory();
+        }
+
+        function toggleHistory() {
+            const sec = document.getElementById('history-section');
+            sec.classList.toggle('hidden');
+            if(!sec.classList.contains('hidden')) renderHistory();
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('history-list');
+            let history = JSON.parse(localStorage.getItem('presenca_history') || '[]');
+            
+            if (history.length === 0) {
+                container.innerHTML = '<p class="text-slate-500 text-sm italic col-span-full">Nenhuma lista salva no momento.</p>';
+                return;
+            }
+
+            container.innerHTML = '';
+            history.reverse().forEach(record => {
+                container.innerHTML += `
+                    <div class="border border-slate-200 p-4 rounded-lg bg-slate-50 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-bold text-slate-800 mb-1">${record.titulo}</h3>
+                            <p class="text-xs text-slate-500 mb-1"><i class="fa-regular fa-calendar mr-1"></i> ${record.dataSalvamento}</p>
+                            <p class="text-xs text-slate-600"><span class="font-semibold">Tipo:</span> ${record.tipo || '-'}</p>
+                            <p class="text-xs text-slate-600"><span class="font-semibold">Instrutor:</span> ${record.instrutor || '-'}</p>
+                        </div>
+                        <div class="mt-3 flex gap-2">
+                            <button onclick="loadRecord(${record.id})" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 px-3 py-1.5 rounded text-xs font-semibold transition w-full">Carregar</button>
+                            <button onclick="deleteRecord(${record.id})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 px-3 py-1.5 rounded text-xs font-semibold transition"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function loadRecord(id) {
+            if(!confirm("Atenção: Carregar um registro irá substituir os dados atuais na tela. Continuar?")) return;
+            
+            let history = JSON.parse(localStorage.getItem('presenca_history') || '[]');
+            const record = history.find(r => r.id === id);
+            if(!record) return;
+
+            document.getElementById('titulo').value = record.titulo === 'Sem Título' ? '' : record.titulo;
+            document.getElementById('conteudo').value = record.conteudo;
+            document.getElementById('tipo').value = record.tipo;
+            document.getElementById('local').value = record.local;
+            document.getElementById('duracao').value = record.duracao;
+            document.getElementById('instrutor').value = record.instrutor;
+            document.getElementById('material').value = record.material;
+
+            pads['instrutor'].clear();
+            if(record.pad_instrutor) pads['instrutor'].fromDataURL(record.pad_instrutor);
+
+            for (let i = 1; i <= TOTAL_PARTICIPANTS; i++) {
+                const p = record.participantes[i-1];
+                document.getElementById(`p_nome_${i}`).value = p.nome;
+                document.getElementById(`p_funcao_${i}`).value = p.funcao;
+                document.getElementById(`p_empresa_${i}`).value = p.empresa;
+                document.getElementById(`p_data_${i}`).value = p.data;
+                
+                pads[`p_${i}`].clear();
+                if(p.assinatura) pads[`p_${i}`].fromDataURL(p.assinatura);
+            }
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function deleteRecord(id) {
+            if(!confirm("Excluir este registro permanentemente?")) return;
+            let history = JSON.parse(localStorage.getItem('presenca_history') || '[]');
+            history = history.filter(r => r.id !== id);
+            localStorage.setItem('presenca_history', JSON.stringify(history));
+            renderHistory();
+        }
+
+        function exportPDF() {
+            const element = document.getElementById('document-container');
+            const titulo = document.getElementById('titulo').value || 'documento';
+            
+            // Hide clear buttons temporarily just to be safe (though .no-print handles most)
+            const opt = {
+                margin:       [0.4, 0.4], // top/bottom, left/right
+                filename:     `Lista_Presenca_${titulo.replace(/\s+/g, '_')}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+            };
+
+            // Loading state
+            const btn = document.querySelector('button[onclick="exportPDF()"]');
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Gerando...';
+            btn.disabled = true;
+
+            html2pdf().set(opt).from(element).save().then(() => {
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+            });
+        }
+
+        // Initialize application on load
+        window.onload = () => {
+            renderParticipants();
+            // Small timeout to ensure DOM layout is finished before initializing canvases
+            setTimeout(initPads, 100); 
+        };
+    </script>
+</body>
+</html>
